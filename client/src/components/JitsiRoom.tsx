@@ -81,11 +81,11 @@ export default function JitsiRoom({
         }
 
         const script = document.createElement("script");
-        script.src = "https://jitsi.riot.im/external_api.js";
+        script.src = "https://meet.jit.si/external_api.js";
         script.async = true;
         script.onload = () => resolve();
         script.onerror = () => reject(new Error("Falha ao carregar Jitsi Meet API"));
-        document.head.appendChild(script);
+        document.body.appendChild(script);
       });
     };
 
@@ -97,7 +97,7 @@ export default function JitsiRoom({
 
         const jitsiRoomName = getOrCreateJitsiRoom(roomId);
 
-        const api = new (window as any).JitsiMeetExternalAPI("jitsi.riot.im", {
+        const api = new (window as any).JitsiMeetExternalAPI("meet.jit.si", {
           roomName: jitsiRoomName,
           parentNode: jitsiContainerRef.current,
           width: "100%",
