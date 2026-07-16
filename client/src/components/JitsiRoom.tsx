@@ -81,7 +81,7 @@ export default function JitsiRoom({
         }
 
         const script = document.createElement("script");
-        script.src = "https://meet.jit.si/external_api.js";
+        script.src = "https://meet.ffmuc.net/external_api.js";
         script.async = true;
         script.onload = () => resolve();
         script.onerror = () => reject(new Error("Falha ao carregar Jitsi Meet API"));
@@ -97,7 +97,7 @@ export default function JitsiRoom({
 
         const jitsiRoomName = getOrCreateJitsiRoom(roomId);
 
-        const api = new (window as any).JitsiMeetExternalAPI("meet.jit.si", {
+        const api = new (window as any).JitsiMeetExternalAPI("meet.ffmuc.net", {
           roomName: jitsiRoomName,
           parentNode: jitsiContainerRef.current,
           width: "100%",
