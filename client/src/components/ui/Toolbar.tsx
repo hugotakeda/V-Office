@@ -207,78 +207,79 @@ export default function Toolbar({
             zIndex: 55,
             padding: "24px",
             minWidth: 320,
-            maxHeight: 360,
-            overflowY: "auto",
           }}
         >
           <div className="kicker" style={{ marginBottom: "16px" }}>
             Convidar colega
           </div>
 
-          {otherUsers.length === 0 ? (
-            <div style={{ fontSize: "14px", color: "var(--ink-400)", textAlign: "center", padding: "16px 0" }}>
-              Nenhum outro usuário online.
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {otherUsers.map((user) => (
-                <button
-                  key={user.userId}
-                  onClick={() => {
-                    onInviteUser(user.userId);
-                    setShowUsers(false);
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                    padding: "12px 16px",
-                    border: "1px solid var(--navy-800)",
-                    background: "var(--navy-900)",
-                    color: "var(--ink-200)",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                    textAlign: "left",
-                    width: "100%",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor = "var(--cyan)";
-                    (e.currentTarget as HTMLElement).style.background = "var(--navy-800)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor = "var(--navy-800)";
-                    (e.currentTarget as HTMLElement).style.background = "var(--navy-900)";
-                  }}
-                >
-                  <div style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: "50%",
-                    background: "var(--navy-800)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    color: "var(--ink-50)",
-                    flexShrink: 0,
-                  }}>
-                    {user.userName.charAt(0)}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: "14px", color: "var(--ink-50)" }}>
-                      {user.userName}
+          <div style={{ maxHeight: 260, overflowY: "auto", overflowX: "hidden", paddingRight: 4 }}>
+            {otherUsers.length === 0 ? (
+              <div style={{ fontSize: "14px", color: "var(--ink-400)", textAlign: "center", padding: "16px 0" }}>
+                Nenhum outro usuário online.
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {otherUsers.map((user) => (
+                  <button
+                    key={user.userId}
+                    onClick={() => {
+                      onInviteUser(user.userId);
+                      setShowUsers(false);
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                      padding: "12px 16px",
+                      border: "1px solid var(--navy-800)",
+                      background: "var(--navy-900)",
+                      color: "var(--ink-200)",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                      borderRadius: 4,
+                      textAlign: "left",
+                      width: "100%",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = "var(--cyan)";
+                      (e.currentTarget as HTMLElement).style.background = "var(--navy-800)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = "var(--navy-800)";
+                      (e.currentTarget as HTMLElement).style.background = "var(--navy-900)";
+                    }}
+                  >
+                    <div style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      background: "var(--navy-800)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "var(--ink-400)",
+                      fontWeight: 600,
+                      fontSize: "14px"
+                    }}>
+                      {user.userName.charAt(0).toUpperCase()}
                     </div>
-                    <div style={{ fontSize: "12px", color: "var(--ink-400)", fontFamily: "var(--font-mono)", marginTop: "2px" }}>
-                      {user.currentRoomId
-                        ? `SALA: ${ROOM_NAMES[user.currentRoomId] || user.currentRoomId}`
-                        : "NO LOBBY"}
+                    
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: "14px", color: "var(--ink-50)" }}>
+                        {user.userName}
+                      </div>
+                      <div style={{ fontSize: "12px", color: "var(--ink-400)", fontFamily: "var(--font-mono)", marginTop: "2px" }}>
+                        {user.currentRoomId
+                          ? `SALA: ${ROOM_NAMES[user.currentRoomId] || user.currentRoomId}`
+                          : "NO LOBBY"}
+                      </div>
                     </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </>

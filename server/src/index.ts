@@ -121,20 +121,48 @@ const io = new Server(httpServer, {
 // Configurar handlers de WebSocket
 setupSocketHandlers(io);
 
+async function ensureRoomsExist() {
+  const { prisma } = await import("./lib/prisma");
+  const roomCount = await prisma.sala.count();
+  
+  if (roomCount === 0) {
+    console.log("🌱 Salas não encontradas no banco. Criando salas padrão...");
+    await Promise.all([
+      prisma.sala.upsert({ where: { id: 1 }, update: {}, create: { id: 1, nome: "Cúbiculo 1", tipo: "CUBICULO", capacidade: 2, posicaoX: -8, posicaoZ: -4 } }),
+      prisma.sala.upsert({ where: { id: 2 }, update: {}, create: { id: 2, nome: "Cúbiculo 2", tipo: "CUBICULO", capacidade: 2, posicaoX: -4, posicaoZ: -4 } }),
+      prisma.sala.upsert({ where: { id: 3 }, update: {}, create: { id: 3, nome: "Cúbiculo 3", tipo: "CUBICULO", capacidade: 2, posicaoX: 0, posicaoZ: -4 } }),
+      prisma.sala.upsert({ where: { id: 4 }, update: {}, create: { id: 4, nome: "Cúbiculo 4", tipo: "CUBICULO", capacidade: 2, posicaoX: 4, posicaoZ: -4 } }),
+      prisma.sala.upsert({ where: { id: 5 }, update: {}, create: { id: 5, nome: "Cúbiculo 5", tipo: "CUBICULO", capacidade: 2, posicaoX: 8, posicaoZ: -4 } }),
+      prisma.sala.upsert({ where: { id: 6 }, update: {}, create: { id: 6, nome: "Cúbiculo 6", tipo: "CUBICULO", capacidade: 2, posicaoX: -8, posicaoZ: 4 } }),
+      prisma.sala.upsert({ where: { id: 7 }, update: {}, create: { id: 7, nome: "Cúbiculo 7", tipo: "CUBICULO", capacidade: 2, posicaoX: -4, posicaoZ: 4 } }),
+      prisma.sala.upsert({ where: { id: 8 }, update: {}, create: { id: 8, nome: "Cúbiculo 8", tipo: "CUBICULO", capacidade: 2, posicaoX: 0, posicaoZ: 4 } }),
+      prisma.sala.upsert({ where: { id: 9 }, update: {}, create: { id: 9, nome: "Cúbiculo 9", tipo: "CUBICULO", capacidade: 2, posicaoX: 4, posicaoZ: 4 } }),
+      prisma.sala.upsert({ where: { id: 10 }, update: {}, create: { id: 10, nome: "Cúbiculo 10", tipo: "CUBICULO", capacidade: 2, posicaoX: 8, posicaoZ: 4 } }),
+      prisma.sala.upsert({ where: { id: 11 }, update: {}, create: { id: 11, nome: "Sala de Reuniões", tipo: "REUNIAO", capacidade: 12, posicaoX: -12, posicaoZ: 0 } }),
+      prisma.sala.upsert({ where: { id: 12 }, update: {}, create: { id: 12, nome: "Copa / Café", tipo: "CAFE", capacidade: 8, posicaoX: 12, posicaoZ: 0 } }),
+    ]);
+    console.log("✅ Salas criadas com sucesso!");
+  }
+}
+
 // ── Iniciar Servidor ───────────────────────────────────────────
 
-httpServer.listen(PORT, () => {
-  console.log(`
-╔═══════════════════════════════════════════════════════╗
-║                                                       ║
-║   🏢  Escritório Virtual - Backend Server             ║
-║                                                       ║
-║   📡  HTTP:      http://localhost:${PORT}               ║
-║   🔌  Socket.io: ws://localhost:${PORT}                 ║
-║   🌐  CORS:      ${CORS_ORIGIN}              ║
-║                                                       ║
-╚═══════════════════════════════════════════════════════╝
-  `);
+ensureRoomsExist().then(() => {
+  httpServer.listen(PORT, () => {
+    console.log(`
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🏢  Escritório Virtual - Backend Server             ║
+  ║                                                       ║
+  ║   📡  HTTP:      http://localhost:${PORT}               ║
+  ║   🔌  Socket.io: ws://localhost:${PORT}                 ║
+  ║   🌐  CORS:      ${CORS_ORIGIN}              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+    `);
+  });
+}).catch(err => {
+  console.error("❌ Falha crítica ao inicializar banco de dados:", err);
 });
 
 // ── Graceful Shutdown ──────────────────────────────────────────
