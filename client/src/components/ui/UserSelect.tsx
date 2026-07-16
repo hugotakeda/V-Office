@@ -1,45 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { signIn, useSession } from "next-auth/react";
 
 interface UserSelectProps {
-  onSelectUser: (user: { id: number; name: string }) => void;
+  onSelectUser: (user: { id: number; name: string; avatar?: string }) => void;
 }
 
 export default function UserSelect({ onSelectUser }: UserSelectProps) {
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const { data: session, status } = useSession();
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!nome.trim() || !email.trim()) {
-      setError("Por favor, preencha nome e email.");
-      return;
+  useEffect(() => {
+    // Se logou com sucesso, sincroniza com o nosso backend
+    if (status === "authenticated" && session?.user?.email && !isSyncing) {
+      setIsSyncing(true);
+      
+      const syncUser = async () => {
+        try {
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+          const response = await fetch(`${API_URL}/api/usuarios`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              nome: session.user?.name || "Usuário Anônimo",
+              email: session.user?.email,
+              avatar: session.user?.image || null
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Erro ao sincronizar usuário no backend");
+          }
+
+          const usuario = await response.json();
+          // Notificar o Ponto de Entrada (App) com os dados sincronizados
+          onSelectUser({ id: usuario.id, name: usuario.nome, avatar: usuario.avatar });
+        } catch (err) {
+          console.error("Falha ao sincronizar", err);
+          setIsSyncing(false);
+        }
+      };
+
+      syncUser();
     }
+  }, [status, session, onSelectUser, isSyncing]);
 
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const response = await fetch("http://localhost:3001/api/usuarios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome: nome.trim(), email: email.trim() }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Erro ao criar usuário");
-      }
-
-      const usuario = await response.json();
-      onSelectUser({ id: usuario.id, name: usuario.nome });
-    } catch (err) {
-      setError("Falha ao conectar com o servidor.");
-      setIsLoading(false);
-    }
-  };
+  if (status === "loading" || isSyncing) {
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--navy-950)" }}>
+        <p style={{ color: "var(--ink-400)", fontFamily: "var(--font-mono)" }}>
+          {status === "loading" ? "VERIFICANDO CREDENCIAIS..." : "SINCRONIZANDO ESCRITÓRIO..."}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -83,75 +98,26 @@ export default function UserSelect({ onSelectUser }: UserSelectProps) {
         </div>
 
         <div className="kicker" style={{ alignSelf: "flex-start", marginBottom: "20px" }}>
-          Identificação
+          Acesso Restrito
         </div>
 
-        <form onSubmit={handleSubmit} style={{ width: "100%", display: "flex", flexDirection: "column", gap: "16px" }}>
-          {error && (
-            <div style={{ color: "var(--coral)", fontSize: "14px", background: "rgba(232, 105, 122, 0.1)", padding: "10px", borderRadius: "3px", border: "1px solid var(--coral)", textAlign: "center" }}>
-              {error}
-            </div>
-          )}
-          
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label style={{ fontSize: "13px", color: "var(--ink-200)", fontFamily: "var(--font-mono)", textTransform: "uppercase" }}>Nome Completo</label>
-            <input
-              type="text"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              placeholder="Ex: João da Silva"
-              disabled={isLoading}
-              style={{
-                background: "var(--navy-900)",
-                border: "1px solid var(--navy-700)",
-                padding: "12px 16px",
-                borderRadius: "3px",
-                color: "var(--ink-50)",
-                fontSize: "15px",
-                fontFamily: "var(--font-sans)",
-                outline: "none",
-                width: "100%",
-                transition: "all 0.2s ease"
-              }}
-              onFocus={(e) => e.target.style.borderColor = "var(--cyan)"}
-              onBlur={(e) => e.target.style.borderColor = "var(--navy-700)"}
-            />
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label style={{ fontSize: "13px", color: "var(--ink-200)", fontFamily: "var(--font-mono)", textTransform: "uppercase" }}>E-mail Profissional</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Ex: joao@empresa.com"
-              disabled={isLoading}
-              style={{
-                background: "var(--navy-900)",
-                border: "1px solid var(--navy-700)",
-                padding: "12px 16px",
-                borderRadius: "3px",
-                color: "var(--ink-50)",
-                fontSize: "15px",
-                fontFamily: "var(--font-sans)",
-                outline: "none",
-                width: "100%",
-                transition: "all 0.2s ease"
-              }}
-              onFocus={(e) => e.target.style.borderColor = "var(--cyan)"}
-              onBlur={(e) => e.target.style.borderColor = "var(--navy-700)"}
-            />
-          </div>
-
+        <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "12px" }}>
           <button 
-            type="submit" 
             className="btn-primary" 
-            disabled={isLoading}
-            style={{ marginTop: "8px", justifyContent: "center", padding: "14px", fontSize: "15px" }}
+            onClick={() => signIn("github")}
+            style={{ justifyContent: "center", padding: "14px", fontSize: "15px", background: "#24292e", border: "none" }}
           >
-            {isLoading ? "Entrando..." : "Entrar no Escritório"}
+            Entrar com GitHub
           </button>
-        </form>
+          
+          <button 
+            className="btn-secondary" 
+            onClick={() => signIn("google")}
+            style={{ justifyContent: "center", padding: "14px", fontSize: "15px", background: "white", color: "#333", border: "none" }}
+          >
+            Entrar com Google
+          </button>
+        </div>
       </div>
     </div>
   );

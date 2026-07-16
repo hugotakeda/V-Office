@@ -5,12 +5,13 @@ import type { OnlineUser } from "@/hooks/useSocket";
 
 interface ToolbarProps {
   isConnected: boolean;
-  currentUser: { id: number; name: string } | null;
+  currentUser: { id: number; name: string; avatar?: string } | null;
   currentRoom: number | null;
   onlineUsers: OnlineUser[];
   onGoToMyCubicle: () => void;
   onLeaveRoom: () => void;
   onInviteUser: (userId: number) => void;
+  onOpenPonto?: () => void;
   onLogout: () => void;
 }
 
@@ -37,6 +38,7 @@ export default function Toolbar({
   onGoToMyCubicle,
   onLeaveRoom,
   onInviteUser,
+  onOpenPonto,
   onLogout,
 }: ToolbarProps) {
   const [showUsers, setShowUsers] = useState(false);
@@ -131,9 +133,14 @@ export default function Toolbar({
               fontSize: "14px",
               fontWeight: 700,
               color: "var(--cyan)",
-              fontFamily: "var(--font-display)"
+              fontFamily: "var(--font-display)",
+              overflow: "hidden"
             }}>
-              {currentUser.name.charAt(0)}
+              {currentUser.avatar ? (
+                <img src={currentUser.avatar} alt={currentUser.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                currentUser.name.charAt(0)
+              )}
             </div>
           </div>
         )}
@@ -163,25 +170,29 @@ export default function Toolbar({
           }}
         >
           <button className="btn-primary" onClick={onGoToMyCubicle}>
-          Ir pro meu cubículo
-        </button>
-
-        <button className="btn-secondary" onClick={() => setShowUsers(!showUsers)}>
-          Chamar colega pra sala
-        </button>
-
-        {currentRoom && (
-          <button className="btn-ghost" onClick={onLeaveRoom}>
-            Sair da sala
+            Ir pro meu cubículo
           </button>
-        )}
 
-        <div style={{ width: 1, height: 24, background: "var(--navy-700)", margin: "0 8px" }} />
+          <button className="btn-secondary" onClick={() => setShowUsers(!showUsers)}>
+            Chamar colega pra sala
+          </button>
 
-        <button className="btn-ghost" onClick={onLogout} style={{ color: "var(--coral)" }}>
-          Sair do escritório
-        </button>
-      </div>
+          <button className="btn-ghost" onClick={onOpenPonto}>
+            Ver meu Ponto
+          </button>
+
+          {currentRoom && (
+            <button className="btn-ghost" onClick={onLeaveRoom}>
+              Sair da sala
+            </button>
+          )}
+
+          <div style={{ width: 1, height: 24, background: "var(--navy-700)", margin: "0 8px" }} />
+
+          <button className="btn-ghost" onClick={onLogout} style={{ color: "var(--coral)" }}>
+            Sair do escritório
+          </button>
+        </div>
       </div>
 
       {/* ── Dropdown de Usuários ───────────────────────────── */}

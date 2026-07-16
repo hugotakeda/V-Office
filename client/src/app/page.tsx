@@ -8,6 +8,7 @@ import InviteModal from "@/components/ui/InviteModal";
 import UserSelect from "@/components/ui/UserSelect";
 import GlobalChat from "@/components/ui/GlobalChat";
 import JitsiRoom from "@/components/JitsiRoom";
+import PontoModal from "@/components/ui/PontoModal";
 
 // Importar Scene3D dinamicamente (sem SSR) pois usa WebGL
 const Scene3D = dynamic(() => import("@/components/Scene3D"), {
@@ -78,7 +79,10 @@ export default function HomePage() {
   const [currentUser, setCurrentUser] = useState<{
     id: number;
     name: string;
+    avatar?: string;
   } | null>(null);
+
+  const [showPonto, setShowPonto] = useState(false);
 
   const {
     isConnected,
@@ -174,6 +178,7 @@ export default function HomePage() {
         onGoToMyCubicle={handleGoToMyCubicle}
         onLeaveRoom={leaveRoom}
         onInviteUser={handleInviteUser}
+        onOpenPonto={() => setShowPonto(true)}
         onLogout={handleLogout}
       />
 
@@ -202,6 +207,11 @@ export default function HomePage() {
           onAccept={() => respondToInvite(true)}
           onDecline={() => respondToInvite(false)}
         />
+      )}
+
+      {/* ── Modal de Ponto ──────────────────────────────────── */}
+      {showPonto && currentUser && (
+        <PontoModal userId={currentUser.id} onClose={() => setShowPonto(false)} />
       )}
 
       {/* ── Instruções iniciais (somente no lobby) ──────────── */}

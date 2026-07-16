@@ -69,26 +69,34 @@ app.get("/api/usuarios", async (_req, res) => {
 });
 
 // Rota para criar ou buscar usuário existente pelo email
-app.post("/api/usuarios", async (req, res) => {
-  try {
-    const { nome, email } = req.body;
-    if (!nome || !email) {
-      return res.status(400).json({ error: "Nome e email são obrigatórios" });
-    }
+  app.post("/api/usuarios", async (req, res) => {
+    try {
+      const { nome, email, avatar } = req.body;
+      if (!nome || !email) {
+        return res.status(400).json({ error: "Nome e email são obrigatórios" });
+      }
 
-    const { prisma } = await import("./lib/prisma");
-    
-    // Tenta encontrar usuário existente
-    let usuario = await prisma.usuario.findUnique({
-      where: { email },
-    });
-
-    // Se não existir, cria
-    if (!usuario) {
-      usuario = await prisma.usuario.create({
-        data: { nome, email },
+      const { prisma } = await import("./lib/prisma");
+      
+      // Tenta encontrar usuário existente
+      let usuario = await prisma.usuario.findUnique({
+        where: { email },
       });
-    }
+
+      // Se existir, atualiza o avatar (se tiver recebido um novo)
+      if (usuario) {
+        if (avatar && usuario.avatar !== avatar) {
+          usuario = await prisma.usuario.update({
+            where: { email },
+            data: { avatar },
+          });
+        }
+      } else {
+        // Se não existir, cria
+        usuario = await prisma.usuario.create({
+          data: { nome, email, avatar: avatar || null },
+        });
+      }
 
     res.json(usuario);
   } catch (error) {

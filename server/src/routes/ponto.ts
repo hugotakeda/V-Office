@@ -7,7 +7,7 @@ const router = Router();
 // Retorna todos os registros de ponto de um usuário
 router.get("/:userId", async (req: Request, res: Response) => {
   try {
-    const userId = parseInt(req.params.userId, 10);
+    const userId = parseInt(req.params.userId as string, 10);
     if (isNaN(userId)) {
       return res.status(400).json({ error: "ID de usuário inválido" });
     }
@@ -66,7 +66,7 @@ router.get("/:userId", async (req: Request, res: Response) => {
 // Retorna resumo do dia atual do usuário
 router.get("/:userId/today", async (req: Request, res: Response) => {
   try {
-    const userId = parseInt(req.params.userId, 10);
+    const userId = parseInt(req.params.userId as string, 10);
     if (isNaN(userId)) {
       return res.status(400).json({ error: "ID de usuário inválido" });
     }
