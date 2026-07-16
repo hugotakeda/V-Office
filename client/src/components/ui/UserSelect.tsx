@@ -10,10 +10,11 @@ interface UserSelectProps {
 export default function UserSelect({ onSelectUser }: UserSelectProps) {
   const { data: session, status } = useSession();
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   useEffect(() => {
     // Se logou com sucesso, sincroniza com o nosso backend
-    if (status === "authenticated" && session?.user?.email && !isSyncing) {
+    if (status === "authenticated" && session?.user?.email && !isSyncing && !syncError) {
       setIsSyncing(true);
       
       const syncUser = async () => {
@@ -30,7 +31,7 @@ export default function UserSelect({ onSelectUser }: UserSelectProps) {
           });
 
           if (!response.ok) {
-            throw new Error("Erro ao sincronizar usuário no backend");
+            throw new Error(`Erro ${response.status}: Falha ao sincronizar usuário no backend`);
           }
 
           const usuario = await response.json();
@@ -38,13 +39,25 @@ export default function UserSelect({ onSelectUser }: UserSelectProps) {
           onSelectUser({ id: usuario.id, name: usuario.nome, avatar: usuario.avatar });
         } catch (err) {
           console.error("Falha ao sincronizar", err);
+          setSyncError("Não foi possível conectar ao servidor do escritório. Verifique se o backend está online.");
           setIsSyncing(false);
         }
       };
 
       syncUser();
     }
-  }, [status, session, onSelectUser, isSyncing]);
+  }, [status, session, onSelectUser, isSyncing, syncError]);
+
+  if (syncError) {
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "var(--navy-950)" }}>
+        <p style={{ color: "var(--coral)", fontFamily: "var(--font-mono)", marginBottom: 16, textAlign: "center", maxWidth: 400 }}>
+          {syncError}
+        </p>
+        <button className="btn-secondary" onClick={() => setSyncError(null)}>Tentar novamente</button>
+      </div>
+    );
+  }
 
   if (status === "loading" || isSyncing) {
     return (
