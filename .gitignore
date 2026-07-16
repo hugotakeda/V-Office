@@ -10,3 +10,4 @@ coverage/
 .DS_Store
 *.sqlite
 *.sqlite-journal
+dev.db
