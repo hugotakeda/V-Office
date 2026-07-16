@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+/// Usuários do sistema - cada um possui um cúbiculo padrão
+model Usuario {
+  id               Int      @id @default(autoincrement())
+  nome             String
+  email            String   @unique
+  avatar           String?
+  idCubiculoPadrao Int?     @map("id_cubiculo_padrao")
+  criadoEm         DateTime @default(now()) @map("criado_em")
+  atualizadoEm     DateTime @updatedAt @map("atualizado_em")
+
+  cubiculoPadrao Sala?   @relation(fields: [idCubiculoPadrao], references: [id])
+  pontos         Ponto[]
+
+  @@map("usuarios")
+}
+
+/// Salas do escritório virtual (cúbiculos, reunião, café)
+model Sala {
+  id         Int      @id @default(autoincrement())
+  nome       String
+  tipo       String   // CUBICULO, REUNIAO, CAFE
+  capacidade Int      @default(1)
+  posicaoX   Float    @default(0) @map("posicao_x")
+  posicaoZ   Float    @default(0) @map("posicao_z")
+  criadoEm   DateTime @default(now()) @map("criado_em")
+
+  usuarios Usuario[]
+  pontos   Ponto[]
+
+  @@map("salas")
+}
+
+/// Registro de ponto - entrada e saída dos usuários nas salas
+model Ponto {
+  id              Int       @id @default(autoincrement())
+  idUsuario       Int       @map("id_usuario")
+  idSala          Int       @map("id_sala")
+  dataHoraEntrada DateTime  @default(now()) @map("data_hora_entrada")
+  dataHoraSaida   DateTime? @map("data_hora_saida")
+
+  usuario Usuario @relation(fields: [idUsuario], references: [id])
+  sala    Sala    @relation(fields: [idSala], references: [id])
+
+  @@index([idUsuario])
+  @@index([idSala])
+  @@index([dataHoraEntrada])
+  @@map("ponto")
+}
